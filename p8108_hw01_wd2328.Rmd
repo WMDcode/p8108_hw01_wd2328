@@ -1,9 +1,53 @@
 ---
 title: "Homework 1"
-subtitle: "P8108 - Survival Analysis"
 author: "William Donovan"
-output: html_document
+subtitle: "P8108 - Survival Analysis"
+output:
+  html_document: default
+  pdf_document: default
 ---
 
-# Problem 1
+# Question 1
 
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+
+# Load in Q1 and Q2 data
+q1_df = read_csv("data/Q1data_extracted.csv")
+q2_df = read_csv("data/Q2data_extracted.csv")
+```
+
+a.  The MLE $\hat\lambda$ for an Exponential distribution is given by:  
+    $$
+    \hat\lambda = \frac{d}{\sum_i t_i} = \frac{\text{The number of events}}{\text{Person-time: total number of time units observed on all individuals}}
+    $$
+
+    Using R to calculate:
+    ```{r}
+    # Calculate number of events and person-time for relapse
+    d_relapse = sum(pull(q1_df, Relapse))
+    sum_time_relapse = sum(pull(q1_df, Relapse_Time))
+    
+    # Calculate relapse MLE
+    mle_relapse = d_relapse/sum_time_relapse
+    
+    # Calculate number of events and person-time for death
+    d_death = sum(pull(q1_df, Death))
+    sum_time_death = sum(pull(q1_df, Death_Time))
+    
+    # Calculate death MLE
+    mle_death = d_death/sum_time_death
+    ```
+
+    `mle_relapse` $\hat\lambda_{relapse}$ = `r round(mle_relapse, 3)`
+    
+    `mle_death` $\hat\lambda_{death}$ = `r round(mle_death, 3)`
+    
+    The maximum likelihood estimator $\hat\lambda$ is an estimator for the hazard rate parameter, $\lambda$, which is constant      in an exponential distribution. The estimated hazard rate of relapse $\hat\lambda_{relapse}$ is `r round(mle_relapse, 3)`       events per month of person-time. The estimated hazard rate of death $\hat\lambda_{death}$ is `r round(mle_death, 3)` events     per month of person-time.
+
+b. We can use the MLE to calculate the quantities below.  
+    i. **Mean**  
+       The expectation, or mean, of the exponential distribution is $\frac{1}{\lambda}$.  
+       $$
+       \mu = 1/`r round(mle_relapse, 3)` = `r 1/round(mle_relapse, 3)`
+       $$

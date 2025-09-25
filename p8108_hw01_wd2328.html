@@ -356,8 +356,52 @@ display: none;
 </div>
 
 
-<div id="problem-1" class="section level1">
-<h1>Problem 1</h1>
+<div id="question-1" class="section level1">
+<h1>Question 1</h1>
+<pre class="r"><code>library(tidyverse)
+
+# Load in Q1 and Q2 data
+q1_df = read_csv(&quot;data/Q1data_extracted.csv&quot;)
+q2_df = read_csv(&quot;data/Q2data_extracted.csv&quot;)</code></pre>
+<ol style="list-style-type: lower-alpha">
+<li><p>The MLE <span class="math inline">\(\hat\lambda\)</span> for an
+Exponential distribution is given by:<br />
+<span class="math display">\[
+\hat\lambda = \frac{d}{\sum_i t_i} = \frac{\text{The number of
+events}}{\text{Person-time: total number of time units observed on all
+individuals}}
+\]</span></p>
+<p>Using R to calculate:</p>
+<pre class="r"><code># Calculate number of events and person-time for relapse
+d_relapse = sum(pull(q1_df, Relapse))
+sum_time_relapse = sum(pull(q1_df, Relapse_Time))
+
+# Calculate relapse MLE
+mle_relapse = d_relapse/sum_time_relapse
+
+# Calculate number of events and person-time for death
+d_death = sum(pull(q1_df, Death))
+sum_time_death = sum(pull(q1_df, Death_Time))
+
+# Calculate death MLE
+mle_death = d_death/sum_time_death</code></pre>
+<p><code>mle_relapse</code> <span class="math inline">\(\hat\lambda_{relapse}\)</span> = 0.032</p>
+<p><code>mle_death</code> <span class="math inline">\(\hat\lambda_{death}\)</span> = 0.013</p>
+<p>The maximum likelihood estimator <span class="math inline">\(\hat\lambda\)</span> is an estimator for the
+hazard rate parameter, <span class="math inline">\(\lambda\)</span>,
+which is constant in an exponential distribution. The estimated hazard
+rate of relapse <span class="math inline">\(\hat\lambda_{relapse}\)</span> is 0.032 events per
+month of person-time. The estimated hazard rate of death <span class="math inline">\(\hat\lambda_{death}\)</span> is 0.013 events per
+month of person-time.</p></li>
+<li><p>We can use the MLE to calculate the quantities below.</p>
+<ol style="list-style-type: lower-roman">
+<li><strong>Mean</strong><br />
+The expectation, or mean, of the exponential distribution is <span class="math inline">\(\frac{1}{\lambda}\)</span>.<br />
+<span class="math display">\[
+\mu = 1/0.032 = 31.25
+\]</span></li>
+</ol></li>
+</ol>
 </div>
 
 
