@@ -43,11 +43,22 @@ a.  The MLE $\hat\lambda$ for an Exponential distribution is given by:
     
     `mle_death` $\hat\lambda_{death}$ = `r round(mle_death, 3)`
     
-    The maximum likelihood estimator $\hat\lambda$ is an estimator for the hazard rate parameter, $\lambda$, which is constant      in an exponential distribution. The estimated hazard rate of relapse $\hat\lambda_{relapse}$ is `r round(mle_relapse, 3)`       events per month of person-time. The estimated hazard rate of death $\hat\lambda_{death}$ is `r round(mle_death, 3)` events     per month of person-time.
+    The maximum likelihood estimator $\hat\lambda$ is an estimator for the hazard rate parameter, $\lambda$, which is constant in an exponential distribution. The estimated hazard rate of relapse $\hat\lambda_{relapse}$ is `r round(mle_relapse, 3)` events per month of person-time. The estimated hazard rate of death $\hat\lambda_{death}$ is `r round(mle_death, 3)` events per month of person-time.
 
 b. We can use the MLE to calculate the quantities below.  
     i. **Mean**  
        The expectation, or mean, of the exponential distribution is $\frac{1}{\lambda}$.  
        $$
-       \mu = 1/`r round(mle_relapse, 3)` = `r 1/round(mle_relapse, 3)`
+       \mu_{relapse} = 1/`r round(mle_relapse, 3)` = `r 1/round(mle_relapse, 3)`
        $$
+       $$
+       \mu_{death} = 1 / `r round(mle_death, 3)` = `r round(1/mle_death, 3)`
+       $$
+    ii. **Median**  
+        The median of an exponential distribution is given by $\tau = \frac{-log(0.5)}{\lambda}$. 
+        $$
+        \tau_{relapse} = \frac{-log(0.5)}{`r round(mle_relapse, 3)`} = `r round((-1 * log(0.5))/mle_relapse, 3)`
+        $$
+        $$
+        \tau_{death} = \frac{-log(0.5)}{`r round(mle_death, 3)`} = `r round((-1 * log(0.5))/mle_death, 3)`
+        $$
