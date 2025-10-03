@@ -153,7 +153,7 @@ c.
       add_quantile(y_value = 0.25, linewidth = 0.3) +
       add_quantile(y_value = 0.5, linewidth = 0.8) +
       add_quantile(y_value = 0.75, linewidth = 0.3) +
-      labs(x = "Time (months)",
+      labs(x = "Time (days)",
            title = "KM Survival Curve")
     ```
   
@@ -163,7 +163,7 @@ d.
       quantile(probs = c(0.25, 0.5, 0.75), conf.int = FALSE)
     ```
 
-   Using R, we can see the 25th percentile (22 months), the median or 50th percentile (90 months), and the 75th percentile (180 months). This is shown above on the plot by the horizontal dashed lines.
+   Using R, we can see the 25th percentile (22 days), the median or 50th percentile (90 days), and the 75th percentile (180 days). This is shown above on the plot by the horizontal dashed lines.
 
 e. The cumulative hazard can be calculated from the KM survival estimate using the relationship 
     $$
@@ -198,7 +198,7 @@ g. Cumulative Hazard plots
           ggsurvplot(data = q2_df, 
                      fun = "cumhaz",
                      title = "Cumulative Hazard Plot",
-                     xlab = "Time (months)",
+                     xlab = "Time (days)",
                      palette = "cornflowerblue",
                      ggtheme = theme_bw())
         ```
@@ -246,7 +246,61 @@ h. Using the Nelson-Aalen cumulative hazard, the Fleming-Harrington estimator ca
 
 # Question 3
 
+a. The Actuarial Lifetable is constructed manually in R below. The Actuarial Estimate is shown under `act_surv` and is calculated using the function:
+    $$
+    \hat{S}(t_j) = \prod_{\ell \leq j}\left(1 - \frac{d_{\ell}}{{r}^{\prime}_{\ell}}\right)
+    $$
+    
+    ```{r}
+    lifetable_df = q2_df |>
+      mutate(
+        interval = cut(Value,
+                       breaks = seq(0, max(Value) + 30, by = 30),
+                       right = FALSE)) |>
+      group_by(interval) |>
+      summarise(
+        d_j = sum(Binary == 1),
+        c_j = sum(Binary == 0)) |>
+      mutate(
+        r_j = nrow(q2_df) - lag(cumsum(d_j + c_j), default = 0),
+        rprime_j = r_j - (c_j / 2),
+        qhat_j = d_j / rprime_j,
+        act_surv = cumprod(1 - qhat_j))
+      
+    lifetable_df
+    ```
 
-
+b. The hazard function at the midpoint of each time interval can be calculated using:
+    $$
+    \hat{\lambda}(t_{mj}) = \frac{d_j}{b_j(r^{\prime}_j - d_j/2)}
+    $$
+   where $b_j$ is the interval width (30).
+   
+   Adding hazard to the lifetable:
+    ```{r}
+    lifetable_df = lifetable_df |>
+      mutate(
+        hazard = d_j / (30 * (rprime_j - (d_j/2))))
+        
+    lifetable_df
+    ```
+  
+   Plotting hazard over time:
+    ```{r}
+    lifetable_df |>
+      mutate(
+        lower = as.numeric(sub("\\[(\\d+),.*", "\\1", interval)),
+        upper = as.numeric(sub(".*,([0-9]+)\\)", "\\1", interval)),
+        midpoint = (lower + upper) / 2,) |>
+      ggplot(aes(x = midpoint, y = hazard)) +
+      geom_step(color = "cornflowerblue", linewidth = 1) +
+      theme_bw() +
+      labs(
+        title = "Actuarial Hazard",
+        x = "Time (days)",
+        y = "Hazard")
+    ```
+  
+c. From the plot above, hazard seems to increase with time. It is relatively stable at first, but starts to increase in the last few intervals. Since an exponential model relies on hazard remaining constant, an exponential model would not be appropriate.
 
         
