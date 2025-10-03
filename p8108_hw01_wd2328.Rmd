@@ -7,13 +7,16 @@ output:
   html_document: default
 ---
 
-# Question 1
-
 ```{r message=FALSE, warning=FALSE}
 library(tidyverse)
 library(survival)
 library(survminer)
+library(ggsurvfit)
+```
 
+# Question 1
+
+```{r message=FALSE}
 # Load in Q1 data
 q1_df = read_csv("data/Q1data_extracted.csv")
 ```
@@ -99,14 +102,13 @@ b. We can use the MLE to calculate the quantities below.
        As expected, $S_R(24|12) = S_R(12)$ since the hazard rate $\lambda$ of an exponential distribution is constant.
     vi. **Median (Using Non-Parametric Methods)**  
         If an exponential distribution is not assumed, the median time-to-event can be calculated using a Kaplan-Meier estimate. However, in this case, only the median time-to-relapse can be calculated. The median time-to-event is given by the smallest $t$ where $\hat{S}(t) \leq 0.5$. For deaths, the KM survival estimator $\hat{S}(t)$ never reaches 0.5, since 7 of 10 observations are censored, and can therefore not be estimated. For relapse, $\hat{S}(t)$ drops to 0.5 at 27 months, so the median time-to-relapse is calculated to be 27 months. This can be confirmed with R:
-    ```{r message=FALSE, warning=FALSE}
-    km_q1 = survfit(
-      Surv(Relapse_Time, Relapse) ~ 1, 
-      data = q1_df)
-    
-    surv_median(km_q1)
-    
-    ```
+        ```{r message=FALSE, warning=FALSE}
+        km_q1 = survfit(
+          Surv(Relapse_Time, Relapse) ~ 1, 
+          data = q1_df)
+        
+        surv_median(km_q1)
+        ```
 
 # Question 2
 
@@ -119,43 +121,90 @@ a. Kaplan-Meier Survival Estimate
 
    ![](images/HW01_Q2a.JPG)
 
-b. 
+b.
     ```{r}
     # Log-log CI
-    km_loglog = survfit(
+    km_loglog = survfit2(
       Surv(Value, Binary) ~ 1, 
       data = q2_df, 
       conf.type = "log-log")
     
     summary(km_loglog)
-
+    
     # Linear CI
-    km_linear = survfit(
+    km_linear = survfit2(
       Surv(Value, Binary) ~ 1, 
       data = q2_df, 
       conf.type = "plain")
     
     summary(km_linear)
     ```
-
-   The "log-log" approach to calculating the 95% confidence intervals is done in order to keep the interval within the [0, 1] bounds of probability. The "linear" approach however is a simple $\hat{S}(t) \pm z_{1-\alpha/2}(SE)$ which can often lead to confidence intervals out of the [0, 1] interval. This does indeed happen with the above Linear CI calculation but the shown interval is truncated at 0.000 and 1.000 by the `survfit()` function. Using the linear CI calculation, the upper 95% CI at $t_j=2$ is:
+   
+   The "log-log" approach to calculating the 95% confidence intervals is done in order to keep the interval within the [0, 1] bounds of probability. The "linear" approach however is a simple $\hat{S}(t) \pm z_{1-\alpha/2}(SE)$ which can often lead to confidence intervals out of the [0, 1] interval. This does indeed happen with the above Linear CI calculation but the shown interval is truncated at 0.000 and 1.000 by the `survfit2()` function. Using the linear CI calculation, the upper 95% CI at $t_j=2$ is:
    $$
    \hat{S}(t) \pm z_{1-\alpha/2}(SE) = 0.941 + 1.96(0.0571) = 1.053
    $$
-c. KM Plot
-
+   
+c.
     ```{r message=FALSE, warning=FALSE}
-    ggsurvplot(
-      km_loglog,
-      data = q2_df,
-      conf.int = TRUE,
-      ggtheme = theme_bw(),
-      xlab = "Time (months)",
-      ylab = "Survival Probability")
+    km_loglog |>
+      ggsurvfit(color = "cornflowerblue", linewidth = 1) +
+      add_confidence_interval(fill = "cornflowerblue") +
+      add_quantile(y_value = 0.25, linewidth = 0.3) +
+      add_quantile(y_value = 0.5, linewidth = 0.8) +
+      add_quantile(y_value = 0.75, linewidth = 0.3) +
+      labs(x = "Time (months)",
+           title = "KM Survival Curve")
+    ```
+  
+d. 
+    ```{r}
+    km_loglog |>
+      quantile(probs = c(0.25, 0.5, 0.75), conf.int = FALSE)
     ```
 
-d. 
+   Using R, we can see the 25th percentile (22 months), the median or 50th percentile (90 months), and the 75th percentile (180 months). This is shown above on the plot by the horizontal dashed lines.
 
+e. The cumulative hazard can be calculated from the KM survival estimate using the relationship 
+    $$
+    \hat{\Lambda}_{KM}(t) = -\log{\left(\hat{S}_{KM}(t)\right)}
+    $$
+    ```{r}
+    surv_summary(km_loglog) |>
+      mutate(
+        km_cumhaz = -log(surv)) |>
+      select(time, km_cumhaz)
+    ```
+
+f. The Nelson-Aalen cumulative hazard estimate can be calculated using 
+    $$
+    \hat{\Lambda}_{NA}(t) = \sum_{t_j \leq t}d_j/r_j
+    $$
+    ```{r}
+    surv_summary(km_loglog) |>
+      mutate(
+        hazard = n.event / n.risk,
+        na_cumhaz = cumsum(hazard)) |> 
+      select(time, na_cumhaz)
+    ```
+
+g. Cumulative Hazard plots
+
+    i.
+      ```{r warning=FALSE}
+      km_loglog |>
+        ggsurvplot(data = q2_df, fun = "cumhaz",
+                   title = "Cumulative Hazard Plot",
+                   xlab = "Time (months)",
+                   palette = "cornflowerblue",
+                   ggtheme = theme_bw())
+      ```
+    
+    ii. 
+```{r}
+
+```
+    
 
 
         
