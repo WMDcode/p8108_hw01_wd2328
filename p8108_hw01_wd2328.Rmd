@@ -181,30 +181,72 @@ f. The Nelson-Aalen cumulative hazard estimate can be calculated using
     \hat{\Lambda}_{NA}(t) = \sum_{t_j \leq t}d_j/r_j
     $$
     ```{r}
-    surv_summary(km_loglog) |>
+    na_df = surv_summary(km_loglog) |>
       mutate(
         hazard = n.event / n.risk,
         na_cumhaz = cumsum(hazard)) |> 
       select(time, na_cumhaz)
+    
+    na_df
     ```
 
 g. Cumulative Hazard plots
 
     i.
-      ```{r warning=FALSE}
-      km_loglog |>
-        ggsurvplot(data = q2_df, fun = "cumhaz",
-                   title = "Cumulative Hazard Plot",
-                   xlab = "Time (months)",
-                   palette = "cornflowerblue",
-                   ggtheme = theme_bw())
-      ```
+        ```{r warning=FALSE}
+        km_loglog |>
+          ggsurvplot(data = q2_df, 
+                     fun = "cumhaz",
+                     title = "Cumulative Hazard Plot",
+                     xlab = "Time (months)",
+                     palette = "cornflowerblue",
+                     ggtheme = theme_bw())
+        ```
+        
+        The cumulative hazard seems to be slightly concave up, which would indicate a slight increase in hazard over time. A Weibull distribution may fit better than an exponential distribution since hazard appears to not be constant.
     
     ii. 
-```{r}
-
-```
+        ```{r warning=FALSE}
+        surv_summary(km_loglog) |>
+          mutate(
+            hazard = n.event / n.risk,
+            log_cumhaz = log(cumsum(hazard)),
+            log_time = log(time)) |>
+          ggplot(aes(x = log_time, y = log_cumhaz)) +
+          geom_step(color = "cornflowerblue",
+                    linewidth = 1) +
+          theme_bw() +
+          labs(title = "Log-log Cumulative Hazard Plot",
+               x = "log(Time)", 
+               y = "log(Cumulative Hazard)")
+        ```
+        
+        Using a $\log \hat{\Lambda}(t)$ vs $\log(t)$ plot can give an idea about what distribution could fit the data. The log cumulative hazard vs. log(time) plot appears roughly linear, meaning a Weibull or exponential distribution could be a good fit. However, for an exponential distribution to fit, the slope should be equal to 1 since hazard is constant. Since the slope seems to be slightly less than 1, an exponential distribution may not fit. However, with the small sample size, it is difficult to be certain, and more observations would help clarify the trend.
+        
+h. Using the Nelson-Aalen cumulative hazard, the Fleming-Harrington estimator can be calculated through the relationship
+   $$
+   \hat{S}_{FH}(t) = \exp\left(-\hat{\Lambda}_{NA}(t)\right)
+   $$
+    ```{r}
+    # Data-frame for time and Fleming-Harrington survival estimate
+    fh_df = na_df |>
+      mutate(fh_surv = exp(-na_cumhaz)) |>
+      select(time, fh_surv)
     
+    # Data-frame for time and Kaplan-Meier survival estimate
+    km_df = surv_summary(km_loglog) |>
+      mutate(km_surv = surv) |>
+      select(time, km_surv)
+    
+    # Joining data-frames for comparison
+    left_join(fh_df, km_df, by = "time")
+    ```
+   
+    The Fleming-Harrington estimator closely follows the Kaplan-Meier estimator, however remains slightly higher and notably does not drop to 0.
+
+# Question 3
+
+
 
 
         
