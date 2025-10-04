@@ -303,4 +303,21 @@ b. The hazard function at the midpoint of each time interval can be calculated u
   
 c. From the plot above, hazard seems to increase with time. It is relatively stable at first, but starts to increase in the last few intervals. Since an exponential model relies on hazard remaining constant, an exponential model would not be appropriate.
 
+# Question 4
+
+For $T_1$, the definition for starting point is the time in which a patient is placed on the waiting list. The end point, 'transplantation', would be when a patient receives a transplant with at least one HLA mismatch. 
+
+There are several reasons for censoring as stated in the article.
+
+  - Patient receives no transplant by the end of the follow-up period. 
+  
+  - Patient is removed from the waiting list.
+  
+  - Patient death.
+  
+  - Patient receives a 'No-mismatch' transplant or a transplant from a living relative.
+
+Not receiving a transplant by the end of the follow-up period is typical right-censoring and is typically non-informative. The censoring mechanism of patients dropping out of the study, due to death or removal from waiting list could be argued to be informative. Patient drop-out could be due to a number of unknown confounding reasons. Many confounders were already adjusted for, such as age, blood-type, cause of end-stage renal disease, and others, but unknown confounders may remain.
+
+The censoring mechanism for the time until a transplant with at least one HLA mismatch is informative censoring. Patients who receive a no mismatch transplant or a transplant from a relative are censored. This event is directly related to the study and is not independent of the research question and transplantation process.
         
